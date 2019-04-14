@@ -1,5 +1,5 @@
 import geohash
-import queue
+from collections import deque
 
 from shapely import geometry
 from shapely.ops import cascaded_union
@@ -33,11 +33,11 @@ def polygon_to_geohashes(polygon, precision, inner=True):
     envelope = polygon.envelope
     centroid = polygon.centroid
 
-    testing_geohashes = queue.Queue()
-    testing_geohashes.put(geohash.encode(centroid.y, centroid.x, precision))
+    testing_geohashes = deque()
+    testing_geohashes.append(geohash.encode(centroid.y, centroid.x, precision))
 
-    while not testing_geohashes.empty():
-        current_geohash = testing_geohashes.get()
+    while testing_geohashes:
+        current_geohash = testing_geohashes.popleft()
 
         if current_geohash not in inner_geohashes and current_geohash not in outer_geohashes:
             current_polygon = geohash_to_polygon(current_geohash)
@@ -57,7 +57,7 @@ def polygon_to_geohashes(polygon, precision, inner=True):
                         outer_geohashes.add(current_geohash)
                 for neighbor in geohash.neighbors(current_geohash):
                     if neighbor not in inner_geohashes and neighbor not in outer_geohashes:
-                        testing_geohashes.put(neighbor)
+                        testing_geohashes.append(neighbor)
 
     return inner_geohashes
 
