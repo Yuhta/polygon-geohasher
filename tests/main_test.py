@@ -1,6 +1,6 @@
 import unittest
 
-from polygon_geohasher.polygon_geohasher import polygon_to_geohashes, geohash_to_polygon, geohashes_to_polygon
+from polygon_geohasher.polygon_geohasher import polygon_to_geohashes, geohash_to_polygon, geohashes_to_polygon, polygon_to_geohashes_split
 from shapely import geometry
 
 
@@ -25,6 +25,12 @@ class TestSimpleMethods(unittest.TestCase):
         polygon = geohashes_to_polygon(polygon_to_geohashes(test_polygon, 7, False))
 
         self.assertTrue(polygon.area >= test_polygon.area)
+
+    def test_split(self):
+        p0 = geometry.Polygon([(-99.1795917, 19.432134), (-99.1656847, 19.429034),
+                               (-99.1776492, 19.414236), (-99.1795917, 19.432134)])
+        ans = polygon_to_geohashes_split(p0, 6)
+        self.assertEqual(7, len(ans))
 
 
 if __name__ == '__main__':

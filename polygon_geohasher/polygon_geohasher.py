@@ -62,6 +62,28 @@ def polygon_to_geohashes(polygon, precision, inner=True):
     return inner_geohashes
 
 
+def polygon_to_geohashes_split(polygon, precision):
+    ans = {}
+    seen = set()
+    e = polygon.envelope
+    c = polygon.centroid
+    q = deque()
+    q.append(geohash.encode(c.y, c.x, precision))
+    while q:
+        g = q.popleft()
+        if g in seen or g in ans: continue
+        p = geohash_to_polygon(g)
+        if e.intersects(p):
+            x = polygon.intersection(p)
+            if x.is_empty:
+                seen.add(g)
+            else:
+                ans[g] = x
+                for gg in geohash.neighbors(g):
+                    if gg not in seen and gg not in ans: q.append(gg)
+    return ans
+
+
 def geohashes_to_polygon(geohashes):
     """
     :param geohashes: array-like. List of geohashes to form resulting polygon.
